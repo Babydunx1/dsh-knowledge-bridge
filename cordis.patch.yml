@@ -1,0 +1,45 @@
+# Cordis patch layer entry for dsh-knowledge-bridge.
+#
+# Two ways to use it:
+#   1. Install the package as a DSH profile bundle (it ships `dsh.bundle.patch`,
+#      so the Plugin Manager / `dsh.profile.bundles` applies this row for you).
+#   2. Merge this row by hand into your profile patch:
+#      ~/.dsh/profiles/<profile>/cordis.patch.yml
+- insert:
+    - id: knowledge-bridge
+      name: "dsh-knowledge-bridge"
+      config:
+        # Knowledge vault roots. Omit this key entirely (recommended) to use
+        # auto-discovery, which probes, in order:
+        #   1. DSH_KNOWLEDGE_PATHS  — env var, `;` or `,` separated paths
+        #   2. ~/.gemini/antigravity-ide/knowledge
+        #      ~/.antigravity-ide/knowledge
+        #      ~/.dsh/knowledge
+        #      ~/.codex/knowledge
+        #   3. ./knowledge, ./docs/knowledge, ./.knowledge  (relative to cwd)
+        # Set it explicitly only when your vault lives somewhere unusual:
+        # knowledgePaths:
+        #   - "~/my-vault"
+        #   - "~/team-docs/knowledge"
+
+        # Candidate rule files, resolved from the workspace root and injected
+        # into the agent's system prompt.
+        rulesPaths:
+          - "AGENTS.md"
+          - "GEMINI.md"
+          - "CLAUDE.md"
+
+        # Inject project rules plus a one-line knowledge directive (~140 chars)
+        # into the prompt. Set false to keep the prompt untouched.
+        autoInjectRules: true
+
+        # Deny destructive shell commands before they reach the disk.
+        enableSafetyGuard: true
+
+        # Regular expressions the safety guard denies (matched against the
+        # command string of bash / pwsh / cmd / terminal tool calls).
+        bannedPatterns:
+          - "git\\s+reset\\s+--hard"
+          - "git\\s+clean\\s+-fd"
+          - "git\\s+restore\\s+\\."
+          - "rm\\s+-rf\\s+/(?!tmp)"

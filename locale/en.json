@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Knowledge bridge",
+    "description": "Host-level access to your knowledge vaults: zero-config discovery, search/read/list tools, and a guard against destructive shell commands."
+  }
+}

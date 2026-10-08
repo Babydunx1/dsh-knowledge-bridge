@@ -1,0 +1,84 @@
+name: Bug report
+description: Something is broken — the entry will not activate, a tool misbehaves, or the guard lets a command through.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. The two log lines below resolve most issues immediately.
+
+  - type: input
+    id: dsh-version
+    attributes:
+      label: DeepSeek Harness version
+      description: Shown in the app's About dialog, or `dsh --version`.
+      placeholder: 0.2.0-rc.2
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      placeholder: Windows 11 / macOS 15 / Ubuntu 24.04
+    validations:
+      required: true
+
+  - type: input
+    id: init-log
+    attributes:
+      label: Startup log line
+      description: The plugin logs `[knowledge-bridge] Initialized with N path(s), indexed M item(s)`.
+      placeholder: "[knowledge-bridge] Initialized with 1 path(s), indexed 50 item(s)"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: vault-layout
+    attributes:
+      label: Vault layout
+      options:
+        - Structured items (metadata.json + artifacts/)
+        - Plain markdown files
+        - Mixed
+        - No vault found
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Include the exact error text, especially any `cannot get property "X" without inject` message.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Enable the bundle
+        2. Ask the agent to ...
+        3. See error
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I restarted the DSH host after editing the plugin (cordis and ESM both cache modules).
+          required: true
+        - label: I read the Troubleshooting section of the README.
+          required: true
+        - label: Secrets, absolute personal paths and vault contents are removed from this report.
+          required: true

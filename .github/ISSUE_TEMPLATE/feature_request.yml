@@ -1,0 +1,50 @@
+name: Feature request
+description: Suggest a new capability, vault layout, or guard rule.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What can you not do today? Describe the workflow, not the implementation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Discovery / configuration
+        - Indexing / vault formats
+        - Retrieval tools (search / read / list)
+        - Safety guard
+        - Prompt injection
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: invariants
+    attributes:
+      label: Project invariants
+      options:
+        - label: This keeps the plugin dependency-free (Node.js built-ins only).
+          required: true
+        - label: This does not require loading the whole vault into the prompt.
+          required: true

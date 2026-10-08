@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="dsh-knowledge-bridge">
+  <defs>
+    <linearGradient id="lg-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111C38"/>
+      <stop offset="1" stop-color="#0A0F1E"/>
+    </linearGradient>
+    <linearGradient id="lg-arc" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4F8CFF"/>
+      <stop offset="0.5" stop-color="#A8C8FF"/>
+      <stop offset="1" stop-color="#4F8CFF"/>
+    </linearGradient>
+    <radialGradient id="lg-glow" cx="0.5" cy="0.62" r="0.5">
+      <stop offset="0" stop-color="#2B6CFF" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#2B6CFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="256" height="256" rx="56" fill="url(#lg-bg)" stroke="#1E2A4E" stroke-width="2"/>
+  <circle cx="128" cy="158" r="92" fill="url(#lg-glow)"/>
+
+  <!-- suspension arc -->
+  <path d="M54 166 C 88 100, 168 100, 202 166" fill="none" stroke="url(#lg-arc)" stroke-width="11" stroke-linecap="round"/>
+  <!-- hangers -->
+  <path d="M98 133 V166" stroke="#3B5BAA" stroke-width="5" stroke-linecap="round"/>
+  <path d="M158 133 V166" stroke="#3B5BAA" stroke-width="5" stroke-linecap="round"/>
+  <!-- deck -->
+  <path d="M54 166 H202" stroke="#2B3A6B" stroke-width="9" stroke-linecap="round"/>
+  <!-- knowledge nodes on the deck -->
+  <circle cx="80" cy="166" r="9" fill="#5B7CFA"/>
+  <circle cx="128" cy="166" r="11" fill="#A8C8FF"/>
+  <circle cx="176" cy="166" r="9" fill="#5B7CFA"/>
+</svg>

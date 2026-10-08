@@ -1,0 +1,5 @@
+{
+  "title": "PostTracker Reconciliation Engine",
+  "summary": "Dual-leg reconciliation architecture for tracked posts: outbound leg at T=0, inbound leg at T=2.4s, a 12-second watchdog that closes ghost tickets, and the FB error radar that classifies platform rejections.",
+  "tags": ["posttracker", "reconciliation", "watchdog", "architecture"]
+}

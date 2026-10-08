@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="340" viewBox="0 0 1280 340" role="img" aria-label="dsh-knowledge-bridge — host-level knowledge for DeepSeek Harness">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0A0F1E"/>
+      <stop offset="1" stop-color="#131C38"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.12" cy="0.1" r="0.75">
+      <stop offset="0" stop-color="#2B6CFF" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#2B6CFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="arc" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4F8CFF"/>
+      <stop offset="0.5" stop-color="#8AB4FF"/>
+      <stop offset="1" stop-color="#4F8CFF"/>
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#1B2547" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1280" height="340" rx="24" fill="url(#bg)"/>
+  <rect width="1280" height="340" rx="24" fill="url(#grid)" opacity="0.5"/>
+  <rect width="1280" height="340" rx="24" fill="url(#glow)"/>
+
+  <!-- left: identity -->
+  <text x="64" y="92" font-family="ui-sans-serif, 'Segoe UI', Inter, Arial, sans-serif" font-size="14" font-weight="600" letter-spacing="3.5" fill="#5B7CFA">DSH PLUGIN BUNDLE</text>
+  <text x="62" y="152" font-family="ui-sans-serif, 'Segoe UI', Inter, Arial, sans-serif" font-size="46" font-weight="700" fill="#FFFFFF">dsh-knowledge-bridge</text>
+  <text x="64" y="194" font-family="ui-sans-serif, 'Segoe UI', Inter, Arial, sans-serif" font-size="19" fill="#93A4CC">Host-level vault access for your agent — plus a guard for destructive shell calls.</text>
+
+  <g font-family="ui-monospace, 'Cascadia Code', Consolas, monospace" font-size="15">
+    <rect x="64" y="220" width="216" height="36" rx="18" fill="#17224A" stroke="#2B3A6B"/>
+    <text x="86" y="244" fill="#CFE0FF">knowledge_search</text>
+    <rect x="292" y="220" width="196" height="36" rx="18" fill="#17224A" stroke="#2B3A6B"/>
+    <text x="314" y="244" fill="#CFE0FF">knowledge_read</text>
+    <rect x="500" y="220" width="196" height="36" rx="18" fill="#17224A" stroke="#2B3A6B"/>
+    <text x="522" y="244" fill="#CFE0FF">knowledge_list</text>
+  </g>
+
+  <text x="64" y="302" font-family="ui-sans-serif, 'Segoe UI', Inter, Arial, sans-serif" font-size="14" fill="#6B7DA8">zero config · zero dependencies · Windows · macOS · Linux</text>
+
+  <!-- right: how it works -->
+  <rect x="744" y="60" width="472" height="220" rx="20" fill="#0F1730" stroke="#1E2A4E"/>
+  <text x="776" y="92" font-family="ui-sans-serif, 'Segoe UI', Inter, Arial, sans-serif" font-size="13" font-weight="600" letter-spacing="2.5" fill="#5B7CFA">HOW IT WORKS</text>
+
+  <g font-family="ui-sans-serif, 'Segoe UI', Inter, Arial, sans-serif">
+    <circle cx="792" cy="124" r="13" fill="#1B2A55" stroke="#3B5BAA"/>
+    <text x="792" y="129" font-size="13" fill="#CFE0FF" text-anchor="middle">1</text>
+    <text x="820" y="121" font-size="16" font-weight="600" fill="#E7EEFF">Discover</text>
+    <text x="820" y="140" font-size="13" fill="#7E90B8">env var → ~/.gemini → ~/.dsh → ./knowledge</text>
+
+    <circle cx="792" cy="176" r="13" fill="#1B2A55" stroke="#3B5BAA"/>
+    <text x="792" y="181" font-size="13" fill="#CFE0FF" text-anchor="middle">2</text>
+    <text x="820" y="173" font-size="16" font-weight="600" fill="#E7EEFF">Index</text>
+    <text x="820" y="192" font-size="13" fill="#7E90B8">id · title · summary · artifacts</text>
+
+    <circle cx="792" cy="228" r="13" fill="#1B2A55" stroke="#3B5BAA"/>
+    <text x="792" y="233" font-size="13" fill="#CFE0FF" text-anchor="middle">3</text>
+    <text x="820" y="225" font-size="16" font-weight="600" fill="#E7EEFF">Serve &amp; guard</text>
+    <text x="820" y="244" font-size="13" fill="#7E90B8">pull on demand, deny destructive commands</text>
+  </g>
+
+  <!-- bridge mark: panel corner badge -->
+  <g transform="translate(1152 102) scale(0.55)">
+    <path d="M-56 34 C-30 -26 30 -26 56 34" fill="none" stroke="url(#arc)" stroke-width="7" stroke-linecap="round"/>
+    <path d="M-56 34 H56" stroke="#2B3A6B" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="-40" cy="34" r="6" fill="#5B7CFA"/>
+    <circle cx="0" cy="34" r="6" fill="#8AB4FF"/>
+    <circle cx="40" cy="34" r="6" fill="#5B7CFA"/>
+  </g>
+</svg>
