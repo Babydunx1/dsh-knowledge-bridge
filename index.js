@@ -142,7 +142,8 @@ export function apply(ctx, config = {}) {
           properties: {
             query: {
               type: 'string',
-              description: 'Keywords to search across titles, summaries, and tags (e.g. "reconciliation", "auth", "adspower")',
+              description:
+                'Keywords searched across titles, ids, tags, aliases, references, summaries, artifact names and document bodies (e.g. "reconciliation", "LeaveRequestPage", "migration 024")',
             },
             max_results: {
               type: 'integer',
@@ -157,9 +158,12 @@ export function apply(ctx, config = {}) {
           return {
             query: args.query,
             totalFound: results.length,
+            // Lean by contract: ids, titles, scores and clipped summaries only.
+            // Dumping document bodies here would be a permanent token tax.
             results: results.map((r) => ({
               id: r.id,
               title: r.title,
+              score: r.score,
               summary: clip(r.summary, 400),
               artifacts: r.artifacts,
             })),
@@ -281,7 +285,8 @@ export function apply(ctx, config = {}) {
             text:
               `\n### Knowledge Base:\n` +
               `${knowledgeIndex.length} host knowledge items available. ` +
-              `Use \`knowledge_search\` / \`knowledge_read\` only for repository-specific questions.\n`,
+              `Search it (repo, module or file name) before answering repository-specific questions; ` +
+              `use \`knowledge_search\` and \`knowledge_read\` for detail.\n`,
           });
         }
       }

@@ -105,7 +105,7 @@ An agent's quality is bounded by what it can *reach*, not by how smart it is. Th
 
 | | Feature | Detail |
 |---|---|---|
-| 🧠 | `knowledge_search` | Keyword search over ids, titles and summaries; returns ids, titles, clipped summaries and the artifact list. |
+| 🧠 | `knowledge_search` | Keyword search with explicit weights: title 10 · id 8 · **aliases 8** · **tags 6** · **references 4** · summary 3 · artifact name 2 · **document body 1** (lazy, cached by mtime). Returns `id`, `title`, `score`, a clipped summary and the artifact list — never file content. |
 | 📖 | `knowledge_read` | Reads a full document, or one specific artifact (`master_guide.md`, `07_migration.md`, …) on demand. |
 | 🗂️ | `knowledge_list` | The vault outline: ids, titles, artifact counts, one-line previews. |
 | 🔎 | Zero-config discovery | `DSH_KNOWLEDGE_PATHS` → `~/.gemini/antigravity-ide/knowledge` → `~/.antigravity-ide/knowledge` → `~/.dsh/knowledge` → `~/.codex/knowledge` → `./knowledge` → `./docs/knowledge` → `./.knowledge`. |
@@ -196,13 +196,26 @@ If the vault cannot be found the plugin logs `Initialized with 0 path(s)` — ch
 ```text
 knowledge/
 └── posttracker_engine/
-    ├── metadata.json          # { "title": "...", "summary": "...", "tags": [...] }
+    ├── metadata.json          # title, summary + optional tags / aliases / references
     ├── timestamps.json        # optional
     └── artifacts/
         ├── master_guide.md    # read first: table of contents + current status
         ├── 01_watchdog.md
         └── 02_reconciliation.md
 ```
+
+`metadata.json` fields, in search-weight order:
+
+| Field | Weight | Use it for |
+|---|---|---|
+| `title` | 10 | the human name of the item |
+| `tags` | 6 | topic words (`reconciliation`, `pos`, `payroll`) |
+| `aliases` | 8 | the words *you* actually type, especially Thai/English pairs (`ระบบลา`, `leave`, `ลาพักร้อน`) |
+| `references` | 4 | real file paths or symbols (`src/pages/LeaveRequestPage.tsx`, `migration 024`) |
+| `summary` | 3 | one paragraph of context, clipped to 400 chars in results |
+
+The document **bodies are searched too** (+1) as a last resort, so a symbol that only appears
+inside a file is still findable — but a body hit always ranks below a metadata hit.
 
 **B. Plain markdown** — any directory tree of `.md` / `.txt` files:
 
@@ -313,7 +326,7 @@ Quality gates a change must pass:
 
 | | ฟีเจอร์ | รายละเอียด |
 |---|---|---|
-| 🧠 | `knowledge_search` | ค้น keyword จาก id, title, summary คืน id, title, summary ที่ตัดความยาวแล้ว และรายชื่อ artifact |
+| 🧠 | `knowledge_search` | ค้น keyword พร้อมน้ำหนักชัดเจน: title 10 · id 8 · **aliases 8** · **tags 6** · **references 4** · summary 3 · ชื่อ artifact 2 · **เนื้อในไฟล์ 1** (อ่านแบบ lazy + cache ตาม mtime) — คืน `id`, `title`, `score`, summary ที่ตัดแล้ว และรายชื่อ artifact **ไม่คืนเนื้อไฟล์** |
 | 📖 | `knowledge_read` | อ่านเอกสารเต็ม หรืออ่าน artifact ทีละไฟล์ (`master_guide.md`, `07_migration.md`, …) ตามต้องการ |
 | 🗂️ | `knowledge_list` | สารบัญทั้งคลัง: id, title, จำนวน artifact และคำโปรยบรรทัดเดียว |
 | 🔎 | ค้นหา vault อัตโนมัติ | `DSH_KNOWLEDGE_PATHS` → `~/.gemini/antigravity-ide/knowledge` → `~/.antigravity-ide/knowledge` → `~/.dsh/knowledge` → `~/.codex/knowledge` → `./knowledge` → `./docs/knowledge` → `./.knowledge` |
@@ -404,13 +417,25 @@ bannedPatterns: [
 ```text
 knowledge/
 └── posttracker_engine/
-    ├── metadata.json          # { "title": "...", "summary": "...", "tags": [...] }
+    ├── metadata.json          # title, summary + tags / aliases / references (ไม่บังคับ)
     ├── timestamps.json        # ไม่บังคับ
     └── artifacts/
         ├── master_guide.md    # อ่านตัวนี้ก่อน: สารบัญ + สถานะล่าสุด
         ├── 01_watchdog.md
         └── 02_reconciliation.md
 ```
+
+ฟิลด์ใน `metadata.json` เรียงตามน้ำหนักการค้น:
+
+| ฟิลด์ | น้ำหนัก | ใช้กับอะไร |
+|---|---|---|
+| `title` | 10 | ชื่อที่คนอ่านเข้าใจ |
+| `aliases` | 8 | คำที่**คุณพิมพ์จริง** โดยเฉพาะคู่ไทย/อังกฤษ (`ระบบลา`, `leave`, `ลาพักร้อน`) |
+| `tags` | 6 | คำหมวดหมู่ (`reconciliation`, `pos`, `payroll`) |
+| `references` | 4 | path ไฟล์หรือชื่อ symbol จริง (`src/pages/LeaveRequestPage.tsx`, `migration 024`) |
+| `summary` | 3 | ย่อหน้าอธิบายบริบท ถูกตัดเหลือ 400 ตัวอักษรในผลค้น |
+
+**เนื้อในไฟล์ก็ถูกค้นด้วย** (+1) เป็นทางเลือกสุดท้าย symbol ที่ปรากฏแค่ในไฟล์จึงหาเจอ แต่จะถูกจัดอันดับต่ำกว่าเสมอถ้า metadata match
 
 **B. markdown ธรรมดา** — โฟลเดอร์อะไรก็ได้ที่มีไฟล์ `.md` / `.txt`:
 

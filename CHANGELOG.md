@@ -6,6 +6,25 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+
+- **Metadata keyword search** — `tags` (+6), `aliases` (+8) and `references` (+4) from
+  `metadata.json` are indexed and scored, so a query like `LeaveRequestPage`,
+  `staff_service_entries` or a real file path finds its item instead of only matching titles
+  and summaries. `toStringList()` accepts an array or a `,`/`;` delimited string, so
+  hand-written metadata cannot break the index.
+- **Lazy body search** (+1) — document bodies are searched as a last resort, read on demand and
+  cached by `mtime` (512 entries). An item that already matched on metadata never pays for a
+  document read. Search results stay lean by contract: `id`, `title`, `score`, a clipped
+  summary (≤400 chars) and artifact names — never file content.
+
+### Changed
+
+- The injected directive now nudges a vault search by repo/module/file name before answering
+  repository-specific questions (still one line, < 300 characters).
+- `knowledge_search` results carry a `score` field, and its `query` parameter description now
+  names every searched field.
+
 ### Planned
 
 - Optional client half: browse and search the vault from a DSH settings panel.
