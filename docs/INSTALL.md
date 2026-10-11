@@ -118,9 +118,12 @@ export DSH_KNOWLEDGE_PATHS="$HOME/my-vault:$HOME/team-docs"
 
 The plugin puts this profile's exact update command into the agent's prompt, and `knowledge_info`
 returns the installed version, that command, whether the published version is newer, and the
-restart requirement. The registry lookup, when the agent asks for it, is the only network call the
-plugin ever makes — nothing is fetched at load, and an unreadable registry reports `null` instead of
-guessing.
+restart requirement. When the host process cannot see the profile name (DSH exports `DSH_PROFILE`
+to the shells it hands the agent, not to the host itself), the command is phrased as
+`$env:DSH_PROFILE` on Windows or `"$DSH_PROFILE"` elsewhere, and `updateCommandHint` says so —
+that form resolves inside the same shell the agent runs it in. The registry lookup, when the agent
+asks for it, is the only network call the plugin ever makes — nothing is fetched at load, and an
+unreadable registry reports `null` instead of guessing.
 
 | Task | How |
 |:--|:--|
@@ -237,6 +240,9 @@ export DSH_KNOWLEDGE_PATHS="$HOME/my-vault:$HOME/team-docs"
 
 ปลั๊กอินจะใส่คำสั่งอัปเดตที่ถูกต้องของโปรไฟล์นี้ไว้ใน prompt ของ agent และ `knowledge_info`
 จะคืนเวอร์ชันที่ติดตั้ง · คำสั่งนั้น · มีเวอร์ชันใหม่กว่าไหม · และต้องรีสตาร์ทหรือไม่
+ถ้า process ของ host มองไม่เห็นชื่อโปรไฟล์ (DSH ส่ง `DSH_PROFILE` ให้ shell ที่ agent ใช้ ไม่ได้ส่งให้ตัว host เอง)
+คำสั่งจะอยู่ในรูป `$env:DSH_PROFILE` บน Windows หรือ `"$DSH_PROFILE"` ที่อื่น พร้อม `updateCommandHint` อธิบายไว้
+— รูปแบบนี้ resolve ได้ใน shell เดียวกับที่ agent รันคำสั่ง
 การเช็ค registry (เมื่อ agent ขอ) เป็นการต่อเน็ตครั้งเดียวที่ปลั๊กอินนี้ทำ — ตอนโหลดไม่ยิงเน็ตเลย
 และถ้าอ่าน registry ไม่ได้จะรายงาน `null` ไม่เดา
 

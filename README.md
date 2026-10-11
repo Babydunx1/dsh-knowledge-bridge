@@ -152,7 +152,7 @@ DSH has no plugin auto-update yet, and you do not need to learn a command. Tell 
 
 > “Update the `dsh-knowledge-bridge` plugin, then tell me what to restart.”
 
-The plugin writes the exact command for this profile into the agent's prompt (`knowledge_info` returns it too), so the agent can run it for you:
+The plugin writes the exact command for this profile into the agent's prompt (`knowledge_info` returns it too), so the agent can run it for you. When the host cannot see the profile name, it writes the shell form instead — `$env:DSH_PROFILE` on Windows, `"$DSH_PROFILE"` elsewhere — which the DSH shell resolves for itself:
 
 ```bash
 dsh plugin --profile <profile> update dsh-knowledge-bridge
@@ -430,7 +430,7 @@ DSH ยังไม่มี auto-update ให้ปลั๊กอิน แ�
 
 > “อัปเดตปลั๊กอิน `dsh-knowledge-bridge` ให้หน่อย แล้วบอกว่าต้องรีสตาร์ทอะไร”
 
-ปลั๊กอินจะใส่คำสั่งที่ถูกต้องของโปรไฟล์นี้ไว้ใน prompt ของ agent (และ `knowledge_info` คืนคำสั่งเดียวกัน) agent จึงรันให้ได้ทันที:
+ปลั๊กอินจะใส่คำสั่งที่ถูกต้องของโปรไฟล์นี้ไว้ใน prompt ของ agent (และ `knowledge_info` คืนคำสั่งเดียวกัน) agent จึงรันให้ได้ทันที ถ้า host มองไม่เห็นชื่อโปรไฟล์ จะใส่รูปแบบที่อ้างตัวแปรของ shell แทน — `$env:DSH_PROFILE` บน Windows และ `"$DSH_PROFILE"` ที่อื่น — ซึ่ง DSH shell resolve ให้เอง:
 
 ```bash
 dsh plugin --profile <profile> update dsh-knowledge-bridge

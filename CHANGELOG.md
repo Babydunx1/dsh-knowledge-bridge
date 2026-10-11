@@ -6,6 +6,17 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.1.1] — 2026-10-12
+
+### Fixed
+
+- **The update command stays usable when the profile name is unknown** — DSH exports `DSH_PROFILE`
+  to the shells it hands the agent but not to the host process the plugin runs in, so
+  `knowledge_info` reported `profile: null` and the self-help line carried a literal `<profile>`
+  placeholder. Both now fall back to the shell form (`$env:DSH_PROFILE` on Windows, `"$DSH_PROFILE"`
+  elsewhere), which resolves inside the very shell the agent runs the command in, plus an
+  `updateCommandHint` that explains it.
+
 ## [1.1.0] — 2026-10-12
 
 ### Added
@@ -71,6 +82,7 @@ First public release.
 - A machine-specific vault path was committed in `cordis.patch.yml`; replaced by discovery.
 - Discovery candidates were resolved without expanding `~`, so they never matched.
 
-[Unreleased]: https://github.com/Babydunx1/dsh-knowledge-bridge/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/Babydunx1/dsh-knowledge-bridge/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/Babydunx1/dsh-knowledge-bridge/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/Babydunx1/dsh-knowledge-bridge/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Babydunx1/dsh-knowledge-bridge/releases/tag/v1.0.0

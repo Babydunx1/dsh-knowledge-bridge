@@ -52,10 +52,30 @@ export function activeProfile(env = process.env) {
  * DSH has no plugin auto-update yet, and users are not expected to know this
  * command — the agent reads it from the self-help prompt section or from
  * `knowledge_info` and runs it on the user's behalf.
+ *
+ * With a known profile the command is literal. Without one it is phrased for the
+ * DSH shell instead: DSH exports `DSH_PROFILE` to the shells it hands the agent
+ * but not to the host process this plugin runs in, and the agent runs commands
+ * in those shells. The variable syntax follows the host platform, so the agent
+ * never receives a command that silently targets the wrong profile. The shell
+ * form also survives a renamed profile or a move to another machine.
+ *
+ * @param {string | null} profile
+ * @param {NodeJS.Platform} [platform]
+ * @returns {string}
  */
-export function updateCommandFor(profile) {
-  return `dsh plugin --profile ${profile || '<profile>'} update ${PACKAGE_NAME}`;
+export function updateCommandFor(profile, platform = process.platform) {
+  if (profile) return `dsh plugin --profile ${profile} update ${PACKAGE_NAME}`;
+  const shellVariable = platform === 'win32' ? '$env:DSH_PROFILE' : '"$DSH_PROFILE"';
+  return `dsh plugin --profile ${shellVariable} update ${PACKAGE_NAME}`;
 }
+
+/**
+ * Why an update command may carry a shell variable instead of a profile name.
+ * Reported only when the profile name really is unknown.
+ */
+export const PROFILE_UNKNOWN_HINT =
+  'The host process cannot see DSH_PROFILE; it is set in the DSH shell, which is where this command resolves the profile name.';
 
 /**
  * Look up the latest version published on an npm-compatible registry.
@@ -355,6 +375,7 @@ export function apply(ctx, config = {}) {
             installedVersion: OWN_VERSION,
             profile,
             updateCommand: updateCommandFor(profile),
+            ...(profile ? {} : { updateCommandHint: PROFILE_UNKNOWN_HINT }),
             afterUpdate:
               'Restart DeepSeek Harness to load the new module generation; toggling the plugin off/on does not re-import it.',
             knowledgeItems: knowledgeIndex.length,
@@ -442,12 +463,15 @@ export function apply(ctx, config = {}) {
         // the user — needs the exact command for this machine. One line, and it
         // travels with the prompt the agent already reads.
         if (mergedConfig.updateHint) {
+          const profile = activeProfile();
           sp.section({
             name: 'knowledge-bridge:self-help',
             order: 661,
             text:
               `\n### Knowledge Bridge v${OWN_VERSION} — self-help:\n` +
-              `Update with \`${updateCommandFor(activeProfile())}\` then restart DeepSeek Harness; ` +
+              `Update with \`${updateCommandFor(profile)}\`` +
+              `${profile ? '' : ' (DSH_PROFILE resolves inside the DSH shell)'}` +
+              ` then restart DeepSeek Harness; ` +
               `\`knowledge_info\` reports the installed vs published version.\n`,
           });
         }
