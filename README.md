@@ -116,13 +116,58 @@ An agent's quality is bounded by what it can *reach*, not by how smart it is. Th
 ### Installation
 
 <details open>
-<summary><b>Option A — as a DSH profile bundle (recommended)</b></summary>
+<summary><b>Option A — Add plugin: paste the link (recommended, ~1 minute)</b></summary>
+
+1. DeepSeek Harness → **Plugins** → **Add plugin**
+2. Paste this address into **Package name or address**:
+
+   ```text
+   https://github.com/Babydunx1/dsh-knowledge-bridge
+   ```
+
+3. Click **Install**, then **restart DeepSeek Harness** (a restart loads a fresh JavaScript module generation)
+
+Accepted addresses — all of these pass DSH's own check:
+
+| Paste this | Kind |
+|:--|:--|
+| `https://github.com/Babydunx1/dsh-knowledge-bridge` | Git repository (recommended) |
+| `github:Babydunx1/dsh-knowledge-bridge` | Git shorthand |
+| `https://github.com/Babydunx1/dsh-knowledge-bridge#v1.0.0` | Git, pinned to a tag / branch / commit (`#main`, `#semver:^1.0.0`) |
+| `https://github.com/Babydunx1/dsh-knowledge-bridge/archive/refs/heads/main.tar.gz` | Tarball — use this when Git is not installed on the machine |
+| `git@github.com:Babydunx1/dsh-knowledge-bridge.git` | Git over SSH |
+
+A GitHub **page** URL with extra path segments (e.g. `.../tree/main`) is refused with *"a URL must point at a git repository or a tarball"*.
+
+Command-line equivalent (same code path as the dialog):
+
+```bash
+dsh plugin --profile <profile> add https://github.com/Babydunx1/dsh-knowledge-bridge
+```
+
+Updating later — installed plugins do **not** auto-update yet:
+
+```bash
+dsh plugin --profile <profile> update dsh-knowledge-bridge
+# or: Plugins → uninstall → Add plugin again
+```
+
+The package declares `dsh.bundle.patch`, so DSH registers the bundle and applies [`cordis.patch.yml`](cordis.patch.yml) for you.
+
+📖 **Full step-by-step with verification checks: [docs/INSTALL.md](https://github.com/Babydunx1/dsh-knowledge-bridge/blob/main/docs/INSTALL.md)**
+
+</details>
+
+<details>
+<summary><b>Option B — as a DSH profile bundle (manual equivalent of Option A)</b></summary>
+
+Use this only when the dialog is unavailable. It is exactly what Option A does under the hood.
 
 The package declares `dsh.bundle.patch`, so DSH can install it like any other bundle.
 
 ```powershell
 # 1. Clone / copy the package somewhere permanent
-git clone <your-repo-url> dsh-knowledge-bridge
+git clone https://github.com/Babydunx1/dsh-knowledge-bridge dsh-knowledge-bridge
 
 # 2. Register it in your profile
 #    ~/.dsh/profiles/<profile>/package.json
@@ -141,14 +186,14 @@ Restart DeepSeek Harness. The plugin is applied from [`cordis.patch.yml`](cordis
 </details>
 
 <details>
-<summary><b>Option B — hand-merged profile patch</b></summary>
+<summary><b>Option C — hand-merged profile patch</b></summary>
 
 Copy the `insert` row from [`cordis.patch.yml`](cordis.patch.yml) into `~/.dsh/profiles/<profile>/cordis.patch.yml` and restart DSH.
 
 </details>
 
 <details>
-<summary><b>Option C — point at your own vault</b></summary>
+<summary><b>Option D — point at your own vault</b></summary>
 
 Nothing to configure when your vault is in a standard location. Otherwise:
 
@@ -337,13 +382,58 @@ Quality gates a change must pass:
 ### การติดตั้ง
 
 <details open>
-<summary><b>วิธี A — ติดตั้งเป็น DSH profile bundle (แนะนำ)</b></summary>
+<summary><b>วิธี A — Add plugin: วางลิงก์ (แนะนำ ใช้เวลา ~1 นาที)</b></summary>
+
+1. DeepSeek Harness → **Plugins** → **Add plugin**
+2. วางที่อยู่นี้ในช่อง **Package name or address**:
+
+   ```text
+   https://github.com/Babydunx1/dsh-knowledge-bridge
+   ```
+
+3. กด **Install** แล้ว **รีสตาร์ท DeepSeek Harness** (ต้องรีสตาร์ทเพื่อโหลดโมดูลชุดใหม่)
+
+ลิงก์ที่ใช้ได้ (ผ่านตัวตรวจของ DSH ทั้งหมด):
+
+| วางแบบนี้ | ประเภท |
+|:--|:--|
+| `https://github.com/Babydunx1/dsh-knowledge-bridge` | Git repository (แนะนำ) |
+| `github:Babydunx1/dsh-knowledge-bridge` | Git shorthand |
+| `https://github.com/Babydunx1/dsh-knowledge-bridge#v1.0.0` | Git + ปัก tag / branch / commit (`#main`, `#semver:^1.0.0`) |
+| `https://github.com/Babydunx1/dsh-knowledge-bridge/archive/refs/heads/main.tar.gz` | Tarball — ใช้เมื่อเครื่องไม่มี Git |
+| `git@github.com:Babydunx1/dsh-knowledge-bridge.git` | Git ผ่าน SSH |
+
+ลิงก์หน้าเว็บ GitHub ที่มี path เกิน (เช่น `.../tree/main`) จะถูกปฏิเสธด้วยข้อความ *"a URL must point at a git repository or a tarball"*
+
+เทียบเท่าผ่าน command line (โค้ดเส้นทางเดียวกับในหน้าต่าง):
+
+```bash
+dsh plugin --profile <profile> add https://github.com/Babydunx1/dsh-knowledge-bridge
+```
+
+การอัปเดตภายหลัง — ปลั๊กอินที่ติดตั้งแล้ว **ยังไม่มี auto-update**:
+
+```bash
+dsh plugin --profile <profile> update dsh-knowledge-bridge
+# หรือ: Plugins → ถอน (uninstall) → Add plugin ใหม่
+```
+
+แพ็กเกจประกาศ `dsh.bundle.patch` ไว้แล้ว DSH จึงลงทะเบียน bundle และ apply [`cordis.patch.yml`](cordis.patch.yml) ให้เอง
+
+📖 **คู่มือทีละขั้น + วิธีตรวจหลังติดตั้ง: [docs/INSTALL.md](https://github.com/Babydunx1/dsh-knowledge-bridge/blob/main/docs/INSTALL.md)**
+
+</details>
+
+<details>
+<summary><b>วิธี B — ติดตั้งเป็น DSH profile bundle (แบบ manual เทียบเท่าวิธี A)</b></summary>
+
+ใช้เฉพาะเมื่อหน้าต่าง Add plugin ใช้ไม่ได้ — ขั้นตอนนี้คือสิ่งที่วิธี A ทำอยู่เบื้องหลัง
 
 แพ็กเกจประกาศ `dsh.bundle.patch` ไว้แล้ว จึงติดตั้งเหมือน bundle อื่นของ DSH
 
 ```powershell
 # 1. โคลน / คัดลอกแพ็กเกจไปเก็บถาวร
-git clone <your-repo-url> dsh-knowledge-bridge
+git clone https://github.com/Babydunx1/dsh-knowledge-bridge dsh-knowledge-bridge
 
 # 2. ลงทะเบียนใน profile ของคุณ
 #    ~/.dsh/profiles/<profile>/package.json
@@ -362,14 +452,14 @@ pnpm install
 </details>
 
 <details>
-<summary><b>วิธี B — merge patch เองในโปรไฟล์</b></summary>
+<summary><b>วิธี C — merge patch เองในโปรไฟล์</b></summary>
 
 คัดลอกแถว `insert` จาก [`cordis.patch.yml`](cordis.patch.yml) ไปวางใน `~/.dsh/profiles/<profile>/cordis.patch.yml` แล้วรีสตาร์ท DSH
 
 </details>
 
 <details>
-<summary><b>วิธี C — ชี้ไปที่ vault ของตัวเอง</b></summary>
+<summary><b>วิธี D — ชี้ไปที่ vault ของตัวเอง</b></summary>
 
 ถ้า vault อยู่ในตำแหน่งมาตรฐาน ไม่ต้องตั้งค่าอะไรเลย มิฉะนั้น:
 
