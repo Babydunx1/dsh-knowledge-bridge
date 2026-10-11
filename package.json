@@ -1,6 +1,6 @@
 {
   "name": "dsh-knowledge-bridge",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Give your DeepSeek Harness agent a brain: host-level knowledge vault access with zero-config discovery, three retrieval tools, and a guard against destructive shell commands.",
   "type": "module",
   "main": "index.js",

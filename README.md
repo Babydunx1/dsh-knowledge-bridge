@@ -108,6 +108,7 @@ An agent's quality is bounded by what it can *reach*, not by how smart it is. Th
 | 🧠 | `knowledge_search` | Keyword search with explicit weights: title 10 · id 8 · **aliases 8** · **tags 6** · **references 4** · summary 3 · artifact name 2 · **document body 1** (lazy, cached by mtime). Returns `id`, `title`, `score`, a clipped summary and the artifact list — never file content. |
 | 📖 | `knowledge_read` | Reads a full document, or one specific artifact (`master_guide.md`, `07_migration.md`, …) on demand. |
 | 🗂️ | `knowledge_list` | The vault outline: ids, titles, artifact counts, one-line previews. |
+| ℹ️ | `knowledge_info` | Installed version, the exact update command for **this** profile, the restart requirement, and — on demand — whether a newer version is published. The registry lookup never runs at load, and an unreadable registry answers `null`, never a false "up to date". |
 | 🔎 | Zero-config discovery | `DSH_KNOWLEDGE_PATHS` → `~/.gemini/antigravity-ide/knowledge` → `~/.antigravity-ide/knowledge` → `~/.dsh/knowledge` → `~/.codex/knowledge` → `./knowledge` → `./docs/knowledge` → `./.knowledge`. |
 | 📜 | Rules injection | Discovers `AGENTS.md` / `GEMINI.md` / `CLAUDE.md` from the workspace and adds them to the system prompt. |
 | 🛑 | Safety guard | Denies `bash` / `pwsh` / `cmd` / `terminal` calls whose command matches a banned pattern. |
@@ -145,12 +146,20 @@ Command-line equivalent (same code path as the dialog):
 dsh plugin --profile <profile> add https://github.com/Babydunx1/dsh-knowledge-bridge
 ```
 
-Updating later — installed plugins do **not** auto-update yet:
+#### 🔁 Updating — just ask your agent
+
+DSH has no plugin auto-update yet, and you do not need to learn a command. Tell your agent:
+
+> “Update the `dsh-knowledge-bridge` plugin, then tell me what to restart.”
+
+The plugin writes the exact command for this profile into the agent's prompt (`knowledge_info` returns it too), so the agent can run it for you:
 
 ```bash
 dsh plugin --profile <profile> update dsh-knowledge-bridge
 # or: Plugins → uninstall → Add plugin again
 ```
+
+Then **restart DeepSeek Harness** — the new code loads on the next start (toggling the plugin off/on does not re-import it).
 
 The package declares `dsh.bundle.patch`, so DSH registers the bundle and applies [`cordis.patch.yml`](cordis.patch.yml) for you.
 
@@ -222,6 +231,9 @@ Every key is optional; the defaults below are what a zero-config install uses.
 | `autoInjectRules` | `boolean` | `true` | Inject the rules section plus the one-line knowledge directive. Set `false` for a completely untouched prompt. |
 | `enableSafetyGuard` | `boolean` | `true` | Enable the destructive-command guard. |
 | `bannedPatterns` | `string[]` | see below | Case-insensitive regular expressions matched against the command string. |
+| `updateHint` | `boolean` | `true` | Add one self-help prompt line carrying this profile's update command, so the agent can update the plugin for the user. |
+| `registryUrl` | `string` | `"https://registry.npmjs.org"` | Registry queried by an explicit `knowledge_info` check. |
+| `registryTimeoutMs` | `number` | `2500` | Timeout for that lookup. A timeout is returned as data, never thrown. |
 
 ```js
 bannedPatterns: [
@@ -374,6 +386,7 @@ Quality gates a change must pass:
 | 🧠 | `knowledge_search` | ค้น keyword พร้อมน้ำหนักชัดเจน: title 10 · id 8 · **aliases 8** · **tags 6** · **references 4** · summary 3 · ชื่อ artifact 2 · **เนื้อในไฟล์ 1** (อ่านแบบ lazy + cache ตาม mtime) — คืน `id`, `title`, `score`, summary ที่ตัดแล้ว และรายชื่อ artifact **ไม่คืนเนื้อไฟล์** |
 | 📖 | `knowledge_read` | อ่านเอกสารเต็ม หรืออ่าน artifact ทีละไฟล์ (`master_guide.md`, `07_migration.md`, …) ตามต้องการ |
 | 🗂️ | `knowledge_list` | สารบัญทั้งคลัง: id, title, จำนวน artifact และคำโปรยบรรทัดเดียว |
+| ℹ️ | `knowledge_info` | เวอร์ชันที่ติดตั้ง · คำสั่งอัปเดตที่ถูกต้องของ **โปรไฟล์นี้** · ต้องรีสตาร์ทไหม · และ (เมื่อขอ) มีเวอร์ชันใหม่บน npm ไหม — ไม่ยิงเน็ตตอนโหลดปลั๊กอิน และถ้าอ่าน registry ไม่ได้จะตอบ `null` ไม่ใช่ "อัปทูเดท" |
 | 🔎 | ค้นหา vault อัตโนมัติ | `DSH_KNOWLEDGE_PATHS` → `~/.gemini/antigravity-ide/knowledge` → `~/.antigravity-ide/knowledge` → `~/.dsh/knowledge` → `~/.codex/knowledge` → `./knowledge` → `./docs/knowledge` → `./.knowledge` |
 | 📜 | ฉีดกฎโปรเจกต์ | ค้น `AGENTS.md` / `GEMINI.md` / `CLAUDE.md` จาก workspace แล้วใส่เข้า system prompt |
 | 🛑 | Safety guard | ปฏิเสธคำสั่งของ `bash` / `pwsh` / `cmd` / `terminal` ที่เข้าเกณฑ์ regex ต้องห้าม |
@@ -411,12 +424,20 @@ Quality gates a change must pass:
 dsh plugin --profile <profile> add https://github.com/Babydunx1/dsh-knowledge-bridge
 ```
 
-การอัปเดตภายหลัง — ปลั๊กอินที่ติดตั้งแล้ว **ยังไม่มี auto-update**:
+#### 🔁 การอัปเดต — บอก agent ตรง ๆ ไม่ต้องจำคำสั่ง
+
+DSH ยังไม่มี auto-update ให้ปลั๊กอิน และคุณไม่ต้องรู้คำสั่งอะไรเลย แค่บอก agent ว่า:
+
+> “อัปเดตปลั๊กอิน `dsh-knowledge-bridge` ให้หน่อย แล้วบอกว่าต้องรีสตาร์ทอะไร”
+
+ปลั๊กอินจะใส่คำสั่งที่ถูกต้องของโปรไฟล์นี้ไว้ใน prompt ของ agent (และ `knowledge_info` คืนคำสั่งเดียวกัน) agent จึงรันให้ได้ทันที:
 
 ```bash
 dsh plugin --profile <profile> update dsh-knowledge-bridge
 # หรือ: Plugins → ถอน (uninstall) → Add plugin ใหม่
 ```
+
+แล้ว **รีสตาร์ท DeepSeek Harness** — โค้ดใหม่จะโหลดตอนเปิด (ปิด/เปิด toggle ไม่ทำให้ import ใหม่)
 
 แพ็กเกจประกาศ `dsh.bundle.patch` ไว้แล้ว DSH จึงลงทะเบียน bundle และ apply [`cordis.patch.yml`](cordis.patch.yml) ให้เอง
 
@@ -488,6 +509,9 @@ export DSH_KNOWLEDGE_PATHS="$HOME/my-vault:$HOME/team-docs"
 | `autoInjectRules` | `boolean` | `true` | ฉีดทั้งกฎโปรเจกต์และ directive บรรทัดเดียว ถ้าตั้ง `false` prompt จะไม่ถูกแตะเลย |
 | `enableSafetyGuard` | `boolean` | `true` | เปิด guard กันคำสั่งทำลายข้อมูล |
 | `bannedPatterns` | `string[]` | ดูด้านล่าง | regex (ไม่แคร์ตัวพิมพ์ใหญ่เล็ก) ใช้เทียบกับ command string |
+| `updateHint` | `boolean` | `true` | เพิ่มบรรทัด self-help เข้า prompt พร้อมคำสั่งอัปเดตของโปรไฟล์นี้ เพื่อให้ agent อัปเดตให้ผู้ใช้ได้เอง |
+| `registryUrl` | `string` | `"https://registry.npmjs.org"` | registry ที่ใช้เมื่อเรียก `knowledge_info` ขอเช็คเวอร์ชัน |
+| `registryTimeoutMs` | `number` | `2500` | timeout ของการเช็คนั้น — หมดเวลาถือเป็นข้อมูล ไม่ throw |
 
 ```js
 bannedPatterns: [

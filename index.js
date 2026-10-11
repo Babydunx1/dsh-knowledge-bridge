@@ -1,9 +1,12 @@
+import { readFileSync } from 'node:fs';
+
 import {
   resolveKnowledgePaths,
   buildKnowledgeIndex,
   searchKnowledge,
   readKnowledgeItem,
   loadRulesFile,
+  isNewerVersion,
 } from './lib/knowledge.js';
 
 /**
@@ -15,6 +18,85 @@ const DEFAULT_BANNED_PATTERNS = [
   'git\\s+restore\\s+\\.',
   'rm\\s+-rf\\s+/(?!tmp)',
 ];
+
+/** Package name used for the registry lookup and the update command. */
+export const PACKAGE_NAME = 'dsh-knowledge-bridge';
+
+/**
+ * Version this copy runs, read from its own manifest.
+ *
+ * Resolution is relative to this module, so it works for a git/tarball install,
+ * an npm install and a `link:` development checkout alike. A failure yields
+ * `'0.0.0'`, which makes any registry answer look newer; `isNewerVersion()`
+ * still refuses unparseable input, so the worst case is a spurious hint rather
+ * than a crash.
+ */
+export const OWN_VERSION = (() => {
+  try {
+    const manifest = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
+    return typeof manifest.version === 'string' ? manifest.version : '0.0.0';
+  } catch {
+    return '0.0.0';
+  }
+})();
+
+/** The active DSH profile, as exported by a profile-launched Harness. */
+export function activeProfile(env = process.env) {
+  const name = env?.DSH_PROFILE;
+  return typeof name === 'string' && name.trim().length > 0 ? name.trim() : null;
+}
+
+/**
+ * The exact command that updates this plugin in the active profile.
+ *
+ * DSH has no plugin auto-update yet, and users are not expected to know this
+ * command — the agent reads it from the self-help prompt section or from
+ * `knowledge_info` and runs it on the user's behalf.
+ */
+export function updateCommandFor(profile) {
+  return `dsh plugin --profile ${profile || '<profile>'} update ${PACKAGE_NAME}`;
+}
+
+/**
+ * Look up the latest version published on an npm-compatible registry.
+ *
+ * This runs only when `knowledge_info` is called with the registry check on —
+ * never at load — so plugin startup stays offline. Every failure is returned as
+ * data in `registryCheck`, never thrown, because a version hint must never
+ * break a session.
+ *
+ * @param {string} packageName
+ * @param {string} registryUrl - registry base, e.g. `https://registry.npmjs.org`
+ * @param {number} timeoutMs
+ * @returns {Promise<{ latestVersion: string | null, registryCheck: string }>}
+ */
+export async function fetchLatestVersion(packageName, registryUrl, timeoutMs) {
+  const base = String(registryUrl || DEFAULT_CONFIG.registryUrl).replace(/\/+$/, '');
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`${base}/${encodeURIComponent(packageName)}/latest`, {
+      headers: { accept: 'application/json' },
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      return { latestVersion: null, registryCheck: `http ${response.status}` };
+    }
+    const body = await response.json();
+    return {
+      latestVersion: typeof body?.version === 'string' ? body.version : null,
+      registryCheck: 'ok',
+    };
+  } catch (error) {
+    const aborted = error?.name === 'AbortError';
+    return {
+      latestVersion: null,
+      registryCheck: aborted ? 'timeout' : `error: ${error?.message ?? error}`,
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 /**
  * Cordis plugin inject declaration — the complete list of services this plugin
@@ -31,6 +113,11 @@ export const inject = ['tools', 'systemPrompt'];
  * probes `DSH_KNOWLEDGE_PATHS`, then the well-known vault locations (including
  * `~/.gemini/antigravity-ide/knowledge`), then `./knowledge` / `./docs/knowledge`.
  * A fresh checkout therefore indexes an existing vault with zero configuration.
+ *
+ * `updateHint` adds one self-help line to the prompt so the agent knows the exact
+ * update command for this machine (DSH has no plugin auto-update yet).
+ * `registryUrl` / `registryTimeoutMs` only affect an explicit `knowledge_info`
+ * registry lookup; nothing contacts the network at load.
  */
 export const DEFAULT_CONFIG = {
   knowledgePaths: [],
@@ -38,6 +125,9 @@ export const DEFAULT_CONFIG = {
   autoInjectRules: true,
   enableSafetyGuard: true,
   bannedPatterns: DEFAULT_BANNED_PATTERNS,
+  updateHint: true,
+  registryUrl: 'https://registry.npmjs.org',
+  registryTimeoutMs: 2500,
 };
 
 
@@ -108,6 +198,11 @@ export function apply(ctx, config = {}) {
     autoInjectRules: config.autoInjectRules ?? DEFAULT_CONFIG.autoInjectRules,
     enableSafetyGuard: config.enableSafetyGuard ?? DEFAULT_CONFIG.enableSafetyGuard,
     bannedPatterns: config.bannedPatterns || DEFAULT_CONFIG.bannedPatterns,
+    updateHint: config.updateHint ?? DEFAULT_CONFIG.updateHint,
+    registryUrl: config.registryUrl || DEFAULT_CONFIG.registryUrl,
+    registryTimeoutMs: Number.isFinite(config.registryTimeoutMs)
+      ? config.registryTimeoutMs
+      : DEFAULT_CONFIG.registryTimeoutMs,
   };
 
   const cwd = process.cwd();
@@ -234,6 +329,59 @@ export function apply(ctx, config = {}) {
         },
       }),
     );
+    // Tool: knowledge_info — self-help for updating this plugin.
+    // DSH has no plugin auto-update yet and users are not expected to know the
+    // CLI, so the agent needs the exact command for THIS profile. It is derived
+    // from the live environment (DSH_PROFILE), never hardcoded to a machine.
+    ctx.tools.register(
+      createTool({
+        name: 'knowledge_info',
+        description:
+          'Report the installed knowledge-bridge version, the exact command that updates it in this profile, and whether a newer version is published. Call it before telling a user how to update or enable it, and after an update to confirm which version is loaded.',
+        parameters: {
+          type: 'object',
+          properties: {
+            check_registry: {
+              type: 'boolean',
+              description:
+                'Look up the latest published version on the npm registry (default: true). Pass false to answer entirely offline.',
+            },
+          },
+        },
+        execute: async (args = {}) => {
+          const profile = activeProfile();
+          const info = {
+            plugin: PACKAGE_NAME,
+            installedVersion: OWN_VERSION,
+            profile,
+            updateCommand: updateCommandFor(profile),
+            afterUpdate:
+              'Restart DeepSeek Harness to load the new module generation; toggling the plugin off/on does not re-import it.',
+            knowledgeItems: knowledgeIndex.length,
+            vaultPaths: resolveKnowledgePaths(mergedConfig.knowledgePaths, cwd),
+            registryUrl: mergedConfig.registryUrl,
+            registryCheck: 'skipped',
+            latestVersion: null,
+            updateAvailable: null,
+          };
+          if (args?.check_registry === false) return info;
+
+          const looked = await fetchLatestVersion(
+            PACKAGE_NAME,
+            mergedConfig.registryUrl,
+            mergedConfig.registryTimeoutMs,
+          );
+          info.registryCheck = looked.registryCheck;
+          info.latestVersion = looked.latestVersion;
+          // `null` (not false) when the registry could not be read: unknown is
+          // not the same answer as up to date.
+          info.updateAvailable = looked.latestVersion
+            ? isNewerVersion(looked.latestVersion, OWN_VERSION)
+            : null;
+          return info;
+        },
+      }),
+    );
   }
 
   // 3. Safety Guard Registration
@@ -287,6 +435,20 @@ export function apply(ctx, config = {}) {
               `${knowledgeIndex.length} host knowledge items available. ` +
               `Search it (repo, module or file name) before answering repository-specific questions; ` +
               `use \`knowledge_search\` and \`knowledge_read\` for detail.\n`,
+          });
+        }
+
+        // Self-help line: DSH ships no plugin auto-update, so the agent — not
+        // the user — needs the exact command for this machine. One line, and it
+        // travels with the prompt the agent already reads.
+        if (mergedConfig.updateHint) {
+          sp.section({
+            name: 'knowledge-bridge:self-help',
+            order: 661,
+            text:
+              `\n### Knowledge Bridge v${OWN_VERSION} — self-help:\n` +
+              `Update with \`${updateCommandFor(activeProfile())}\` then restart DeepSeek Harness; ` +
+              `\`knowledge_info\` reports the installed vs published version.\n`,
           });
         }
       }

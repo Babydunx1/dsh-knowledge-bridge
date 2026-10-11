@@ -64,7 +64,7 @@ The package declares `dsh.bundle.patch`, so `cordis.patch.yml` is applied for yo
 |:-:|:--|:--|
 | 1 | **Plugins** list shows `dsh-knowledge-bridge` | Enabled / running — **not** `pending (waiting for service: …)` |
 | 2 | Host log line `Initialized with N path(s)` | **N ≥ 1** (= how many vault roots were indexed). `0 path(s)` → the vault was not found, go to §3 |
-| 3 | Start a session and ask the agent to list its knowledge | The 3 tools are available: `knowledge_list`, `knowledge_search`, `knowledge_read` |
+| 3 | Start a session and ask the agent to list its knowledge | The 4 tools are available: `knowledge_list`, `knowledge_search`, `knowledge_read`, `knowledge_info` |
 
 ---
 
@@ -112,9 +112,20 @@ export DSH_KNOWLEDGE_PATHS="$HOME/my-vault:$HOME/team-docs"
 
 ## 5. Upgrade / uninstall / after editing
 
+**There is no auto-update yet, and you do not need to learn a command — ask your agent:**
+
+> “Update the `dsh-knowledge-bridge` plugin, then tell me what to restart.”
+
+The plugin puts this profile's exact update command into the agent's prompt, and `knowledge_info`
+returns the installed version, that command, whether the published version is newer, and the
+restart requirement. The registry lookup, when the agent asks for it, is the only network call the
+plugin ever makes — nothing is fetched at load, and an unreadable registry reports `null` instead of
+guessing.
+
 | Task | How |
 |:--|:--|
-| Upgrade | Uninstall, then **Add plugin** again with the new address/version, then restart |
+| Ask the agent | Tell it to update `dsh-knowledge-bridge`; it reads the command from the prompt or `knowledge_info` |
+| Upgrade by hand | `dsh plugin --profile <profile> update dsh-knowledge-bridge`, or uninstall → **Add plugin** again |
 | Uninstall | Plugins → the plugin row → Uninstall |
 | Edited the plugin's own source | Restart the DSH host. Toggling the plugin off/on does **not** re-import (cordis caches the plugin function, ESM caches the module) |
 
@@ -191,7 +202,7 @@ Denials are **monotonic** — no other plugin can force-allow one. A denial surf
 |:-:|:--|:--|
 | 1 | รายการ **Plugins** มี `dsh-knowledge-bridge` | Enabled/running — **ไม่ใช่** `pending (waiting for service: …)` |
 | 2 | log ของ host มีบรรทัด `Initialized with N path(s)` | **N ≥ 1** (จำนวน vault ที่ index ได้) ถ้า `0 path(s)` = หา vault ไม่เจอ ไปข้อ 3 |
-| 3 | เปิดเซสชันแล้วขอให้ agent list knowledge | มี tool ครบ 3 ตัว: `knowledge_list` · `knowledge_search` · `knowledge_read` |
+| 3 | เปิดเซสชันแล้วขอให้ agent list knowledge | มี tool ครบ 4 ตัว: `knowledge_list` · `knowledge_search` · `knowledge_read` · `knowledge_info` |
 
 ## 3. การค้นหา vault อัตโนมัติ (รายเครื่อง)
 
@@ -220,9 +231,19 @@ export DSH_KNOWLEDGE_PATHS="$HOME/my-vault:$HOME/team-docs"
 
 ## 5. อัปเกรด / ถอน / หลังแก้โค้ดปลั๊กอิน
 
+**ยังไม่มี auto-update และคุณไม่ต้องรู้คำสั่งอะไรเลย — บอก agent ตรง ๆ:**
+
+> “อัปเดตปลั๊กอิน `dsh-knowledge-bridge` ให้หน่อย แล้วบอกว่าต้องรีสตาร์ทอะไร”
+
+ปลั๊กอินจะใส่คำสั่งอัปเดตที่ถูกต้องของโปรไฟล์นี้ไว้ใน prompt ของ agent และ `knowledge_info`
+จะคืนเวอร์ชันที่ติดตั้ง · คำสั่งนั้น · มีเวอร์ชันใหม่กว่าไหม · และต้องรีสตาร์ทหรือไม่
+การเช็ค registry (เมื่อ agent ขอ) เป็นการต่อเน็ตครั้งเดียวที่ปลั๊กอินนี้ทำ — ตอนโหลดไม่ยิงเน็ตเลย
+และถ้าอ่าน registry ไม่ได้จะรายงาน `null` ไม่เดา
+
 | งาน | วิธี |
 |:--|:--|
-| อัปเกรด | ถอนก่อน แล้ว **Add plugin** ใหม่ + รีสตาร์ท |
+| สั่ง agent | บอกให้อัปเดต `dsh-knowledge-bridge` — agent อ่านคำสั่งจาก prompt หรือ `knowledge_info` เอง |
+| อัปเกรดเอง | `dsh plugin --profile <profile> update dsh-knowledge-bridge` หรือถอน → **Add plugin** ใหม่ |
 | ถอน | Plugins → แถวปลั๊กอิน → Uninstall |
 | แก้โค้ดปลั๊กอินเอง | ต้อง **รีสตาร์ท host** (ปิด/เปิด toggle ไม่พอ เพราะ cordis/ESM แคชไว้) |
 

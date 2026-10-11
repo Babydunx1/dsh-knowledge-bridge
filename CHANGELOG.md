@@ -6,8 +6,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-10-12
+
 ### Added
 
+- **Self-help update path** — DSH has no plugin auto-update yet, so the plugin now teaches the
+  agent how to update it: one prompt line carries the exact command for the live profile
+  (`DSH_PROFILE`, never a hardcoded machine path), and `knowledge_info` reports the installed
+  version, that command, the restart requirement and — on demand only — whether a newer version
+  is published. The registry lookup never runs at load and fails soft: an unreadable registry
+  answers `updateAvailable: null`, never a false "up to date".
 - **Metadata keyword search** — `tags` (+6), `aliases` (+8) and `references` (+4) from
   `metadata.json` are indexed and scored, so a query like `LeaveRequestPage`,
   `staff_service_entries` or a real file path finds its item instead of only matching titles
@@ -20,6 +28,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Changed
 
+- `README.md` and `docs/INSTALL.md` lead with the paste-the-link install path and add a
+  "How to update — just ask your agent" section, so no user has to memorise a command.
 - The injected directive now nudges a vault search by repo/module/file name before answering
   repository-specific questions (still one line, < 300 characters).
 - `knowledge_search` results carry a `score` field, and its `query` parameter description now
@@ -61,5 +71,6 @@ First public release.
 - A machine-specific vault path was committed in `cordis.patch.yml`; replaced by discovery.
 - Discovery candidates were resolved without expanding `~`, so they never matched.
 
-[Unreleased]: https://github.com/Babydunx1/dsh-knowledge-bridge/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/Babydunx1/dsh-knowledge-bridge/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Babydunx1/dsh-knowledge-bridge/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Babydunx1/dsh-knowledge-bridge/releases/tag/v1.0.0
